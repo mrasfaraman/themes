@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { Modal } from "native-base";
 import { useState, useContext } from "react";
 import {
@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { ThemeContext } from '../../context/ThemeContext';
 import { Button } from "native-base";
+import {useTranslation} from 'react-i18next';
+import i18n from '../../pages/i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PrivateKeyModal = ({ privateKey, label }) => {
     const [showModal, setShowModal] = useState(false);
@@ -18,6 +21,20 @@ const PrivateKeyModal = ({ privateKey, label }) => {
     const handleCopyText = () => {
         Clipboard.setString(privateKey);
     };
+    const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
     return <View>
         <TouchableOpacity onPress={() => setShowModal(true)}>
             <View
@@ -35,7 +52,8 @@ const PrivateKeyModal = ({ privateKey, label }) => {
                         }
                     />
                     <Text style={[styles.menuItemText, { color: theme.text }]}>
-                        Show {label} Private Key
+                      
+                    {t('show')} {label} {t('private_key')}
                     </Text>
                 </View>
 
@@ -57,11 +75,11 @@ const PrivateKeyModal = ({ privateKey, label }) => {
         <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
             <Modal.Content maxWidth="400px">
                 <Modal.CloseButton />
-                <Modal.Header>Private Key</Modal.Header>
+                <Modal.Header>{t('private_key')}</Modal.Header>
                 <View style={{ padding: 12 }}>
                     <Text style={{ color: "black", textAlign: "center", marginBottom: 10 }}>{privateKey}</Text>
                     <Button size="sm" variant="outline" onPress={() => handleCopyText()}>
-                        Copy
+                    {t('copy')}
                     </Button>
                 </View>
 

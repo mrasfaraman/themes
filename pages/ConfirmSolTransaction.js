@@ -19,12 +19,30 @@ import MaroonSpinner from '../components/Loader/MaroonSpinner';
 import { useAuth } from '../context/AuthContext';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
+
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const ConfirmSolTransaction = ({route, navigation}) => {
   const {theme} = useContext(ThemeContext);
   const [loader , setLoader] = useState(true)
   const [trxDetail , setTrxDetail] = useState({})
   const [gasDetail , setGasDetail] = useState()
-
+  const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
   const {
     wc,
     wallet,
@@ -103,7 +121,8 @@ const ConfirmSolTransaction = ({route, navigation}) => {
         <View style={styles.swapHeaderFlex}>
           <View style={styles.dropDownFlex}>
             <Text style={[styles.swapHeaderText, {color: theme.text}]}>
-              Token
+            {t('token')}
+
             </Text>
             <View style={styles.swapLeftSubFlex}>
               <View style={styles.currencyIconWrapper}>
@@ -157,7 +176,7 @@ const ConfirmSolTransaction = ({route, navigation}) => {
     <ScrollView
       style={[styles.mainWrapper, {backgroundColor: theme.screenBackgroud}]}>
       <Header
-        title={'Confirm Transaction'}
+        title={t('confirm_transaction')}
         onBack={() => navigation.goBack()}
       />
       {/* <View style={styles.swapWrapper}>
@@ -166,7 +185,8 @@ const ConfirmSolTransaction = ({route, navigation}) => {
       <View style={[styles.confirmAmountWrapperFlex ,{marginTop:50}]}>
         <View style={styles.confrimAmountCenterWrapper}>
           <Text style={[styles.confirmAmountHeding, {color: theme.text}]}>
-          Review Your Transaction
+          {t('review_your_transaction')}
+
           </Text>
           <View style={styles.confirmAmountFlex}>
             <View>
@@ -202,7 +222,7 @@ const ConfirmSolTransaction = ({route, navigation}) => {
       <View
         style={[styles.gasFeeMainWrapper, {backgroundColor: theme.menuItemBG}]}>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Amount To Send</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>  {t('amount_to_send')}</Text>
           <View>
             <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
             {trxDetail?.amount}
@@ -213,7 +233,7 @@ const ConfirmSolTransaction = ({route, navigation}) => {
           </View>
         </View>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Estimated Gas</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>{t('estimated_gas')}</Text>
           <View>
             {/* <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
               0.00612061025
@@ -224,7 +244,7 @@ const ConfirmSolTransaction = ({route, navigation}) => {
           </View>
         </View>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>total</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>{t('total')}</Text>
           <View>
             <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
             {totalAmount}
@@ -247,13 +267,15 @@ const ConfirmSolTransaction = ({route, navigation}) => {
             },
           ]}>
           <Text style={[styles.tokenImportButtonText, {color: '#fff'}]}>
-            Confirm Transaction
+          {t('confirm_transaction')}
+
           </Text>
         </TouchableOpacity>
         :
         <View style={{ justifyContent: 'center', alignItems: 'center'}}>
         <Text style={[styles.gasFeeValue, {color: theme.emphasis }]}>
-          Insufficient funds for gas
+        {t('insufficient_funds_for_gas')}
+
         </Text>
         <TouchableOpacity
           style={[
@@ -266,7 +288,8 @@ const ConfirmSolTransaction = ({route, navigation}) => {
             },
           ]}>
           <Text style={[styles.tokenImportButtonText, {color: '#fff'}]}>
-            Confirm Transaction
+          {t('confirm_transaction')}
+
           </Text>
         </TouchableOpacity>
         </View>

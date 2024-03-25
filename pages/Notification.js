@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {
   Image,
   ScrollView,
@@ -14,11 +14,27 @@ import ListSearch from '../assets/images/list-search.png';
 import ListSearchDark from '../assets/images/list-search-dark.png';
 import NotificationIcon from '../assets/images/notification-gift-icon.png';
 import {ThemeContext} from '../context/ThemeContext';
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Notification = ({navigation}) => {
   const {theme} = useContext(ThemeContext);
   const data = [1, 1, 1, 1];
-
+  const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
   const NotificationCard = () => {
     return (
       <View style={[styles.NotificationCardWrapper, {backgroundColor: theme.notificationWraperBG}]}>
@@ -29,15 +45,15 @@ const Notification = ({navigation}) => {
         </View>
         <View style={styles.notificationRightWrapper}>
           <View style={styles.upperHeaderFlex}>
-            <Text style={[styles.upperheading, {color: theme.text}]}>Claim your rewards!</Text>
+            <Text style={[styles.upperheading, {color: theme.text}]}>{t('claim_your_rewards')}</Text>
             <View style={[styles.newTag, {backgroundColor: theme.emphasis}]}>
-              <Text>New</Text>
+              <Text>{t('new')}</Text>
             </View>
           </View>
           <Text style={[styles.notificationPara, {color: theme.text}]}>
-            Claim your sign up bonus rewards by Rijex now
+          {t('claim_your_sign_up_bonus_rewards_by_rijex_now')}
           </Text>
-          <Text style={[styles.notificationTime, {color: theme.notificationTime}]}>2 hours ago</Text>
+          <Text style={[styles.notificationTime, {color: theme.notificationTime}]}>2 {t('hours_ago')}</Text>
         </View>
       </View>
     );
@@ -46,12 +62,12 @@ const Notification = ({navigation}) => {
   return (
     <ScrollView
       style={[styles.mainWrapper, {backgroundColor: theme.screenBackgroud}]}>
-      <Header title={'Notification'} onBack={() => navigation.goBack()} />
+      <Header title={t('notification')} onBack={() => navigation.goBack()} />
       <View
         style={[styles.listSearchWrapper, {backgroundColor: theme.menuItemBG}]}>
         <Image source={theme.type == 'dark' ? ListSearch : ListSearchDark} alt="search" />
         <TextInput
-          placeholder="Search Notification..."
+          placeholder={t('search_notification')}
           style={[styles.listSearchText, {color: theme.text}]}
           placeholderTextColor={theme.text}
         />

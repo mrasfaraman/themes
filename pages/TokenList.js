@@ -25,35 +25,37 @@ import { LineChart } from 'react-native-svg-charts';
 import Sparkline from '../components/Sparkline ';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
 
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
 const TokenList = ({navigation}) => {
 
   const {theme} = useContext(ThemeContext);
-  const {Tokens , removeToken , selectedAccount , selectedNetwork} = useAuth();
+  const {Tokens , removeToken , selectedAccount} = useAuth();
   const [coins, setCoins] = useState([]);
   const [loader, setLoader] = useState(false)
   const [StateStorage, setStateStorage] = useState([])
   const data = Tokens;
-  
+
   // State to hold the value of the switch
   const [isEnabled, setIsEnabled] = useState(false);
   const [switchEnables, setSwitchEnables] = useState([]);
-  
-  const [activeNet, setActiveNet] = useState()
-  const getNetworkactive = async () => {
-    let data = await JSON.parse(selectedNetwork)
-    setActiveNet(data)
-  }
-
+  const {t} = useTranslation();
   useEffect(() => {
-    getNetworkactive()
-  }, [selectedNetwork, setActiveNet])
-  useEffect(() => {
-    getNetworkactive()
-  }, [])
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
 
   const saveOrUpdateData = async (dataObject) => {
     try {
@@ -225,7 +227,7 @@ const TokenList = ({navigation}) => {
     <View>
       <ScrollView
         style={[styles.MainWrapper, {backgroundColor: theme.screenBackgroud}]}>
-        <Header onBack={() => navigation.goBack()} title="Token List" />
+        <Header onBack={() => navigation.goBack()} title={t('token_list')} />
         {/* <View
           style={[
             styles.listSearchWrapper,
@@ -239,12 +241,8 @@ const TokenList = ({navigation}) => {
           />
         </View> */}
           <View style={{position:'fixed'}} >
-{activeNet?.type == 'solana' && (
-  <AddButton navigation={navigation} />
-)}
-{activeNet?.type == 'evm' && (
-  <AddButton navigation={navigation} />
-)}
+
+        <AddButton navigation={navigation} />
           </View>
 
         <View style={styles.bottomMenuMargin}>

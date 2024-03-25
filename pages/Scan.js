@@ -14,6 +14,10 @@ import Header from '../components/header';
 import QrImage from '../assets/images/qr-image.png';
 import { useAuth } from '../context/AuthContext';
 import { getEVMBalance , getSolBalance } from '../utils/function';
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Scan = ({ navigation , route }) => {
   const { theme } = useContext(ThemeContext);
   const [isScanning, setIsScanning] = useState(false);
@@ -67,10 +71,23 @@ const Scan = ({ navigation , route }) => {
     // console.log(type)
     // console.log(data);
   };
-
+  const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
   return (
     <ScrollView style={[styles.mainWrapper, { backgroundColor: theme.screenBackgroud }]}>
-      <Header title={'Scan'} onBack={() => navigation.goBack()} />
+      <Header title={t('scan_qr')} onBack={() => navigation.goBack()} />
       <View style={styles.container}>
         {isScanning ? (
           <RNCamera
@@ -78,7 +95,7 @@ const Scan = ({ navigation , route }) => {
             onBarCodeRead={handleBarCodeRead}
             captureAudio={false}
           >
-            <Text style={{ color: 'white' }}>Scan your QR Code</Text>
+            <Text style={{ color: 'white' }}>{t('scan_your_qr_code')}</Text>
           </RNCamera>
         ) : (
           <>
@@ -86,7 +103,7 @@ const Scan = ({ navigation , route }) => {
           <Image source={QrImage} />
            </View>
           <TouchableOpacity onPress={() => setIsScanning(true)} style={styles.scanButton}>
-            <Text style={{ color: 'black'}}>Scan QR</Text>
+            <Text style={{ color: 'black'}}>{t('scan_qr')}</Text>
           </TouchableOpacity>
           </>
         )}

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {
   Image,
   ScrollView,
@@ -11,6 +11,9 @@ import bg from '../assets/images/bg.png';
 // import SomeComponent from '../components/temp';
 import {ThemeContext} from '../context/ThemeContext';
 import {useAuth} from '../context/AuthContext';
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen({navigation}) {
   const {theme} = useContext(ThemeContext);
@@ -20,6 +23,21 @@ export default function HomeScreen({navigation}) {
     navigation.navigate('LoginScreen');
   }
 
+
+  const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
   return (
     <ScrollView
       style={[styles.screen, {backgroundColor: theme.screenBackgroud}]}>
@@ -28,31 +46,25 @@ export default function HomeScreen({navigation}) {
       </View>
       <View style={styles.content}>
         <Text style={[styles.textStyle, {color: theme.text}]}>
-          The only crypto wallet you’d ever need
+        {t('the_only_crypto_wallet_you’d_ever_need')}
         </Text>
         {/* <SomeComponent /> */}
         <TouchableOpacity
           style={[styles.buttonStyle, {borderColor: theme.buttonBorder}]}
           onPress={() => navigation.navigate('CreateWalletScreen')}>
-          <Text style={[styles.btnText, {color: theme.text}]}>Get Started</Text>
+          <Text style={[styles.btnText, {color: theme.text}]}>{t('get_started')}</Text>
         </TouchableOpacity>
         <Text style={[styles.textStyle, styles.terms, {color: theme.text}]}>
-    By tapping get started you agree and consent to our {'\n'}    
-        <TouchableOpacity onPress={() => navigation.navigate('Term')}>
+        {t('by_tapping_get_started_you_agree_and_consent_to_our')}{' '}
           <Text style={[styles.emphasis, {color: theme.emphasis}]}>
-          Term and Serices 
-            </Text>
-          </TouchableOpacity>
-          <Text style={[styles.textStyle,styles.terms, {color: theme.text}]}>
-            {' '}and{' '}
+          {t('terms_&_service')}
+          </Text>{' '}
+          {t('and')}{' '}
+          <Text style={[styles.emphasis, {color: theme.emphasis}]}>
+          {t('privacy_policy')}
           </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
-          <Text style={[styles.emphasis, {color: theme.emphasis}]}>
-              Privacy Policy
-            </Text>
-          </TouchableOpacity>
         </Text>
-        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -66,8 +78,6 @@ const styles = StyleSheet.create({
     // color: '#F43459',
     textDecorationLine: 'underline',
     fontWeight: '600',
-    fontSize:11,
-    marginTop:2
   },
   bgImg: {
     marginTop: 35,
@@ -82,7 +92,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontStyle: 'normal',
     fontWeight: '600',
-    textAlign:'center'
   },
   content: {
     marginLeft: 16,
@@ -109,6 +118,5 @@ const styles = StyleSheet.create({
   },
   terms: {
     fontSize: 12,
-    marginTop:-10
   },
 });

@@ -18,6 +18,9 @@ import { Solana_swap , SolToken_estimatedGas, sendSolNative } from '../utils/fun
 import MaroonSpinner from '../components/Loader/MaroonSpinner';
 import { useAuth } from '../context/AuthContext';
 import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import {useTranslation} from 'react-i18next';
+import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const fetchQuote = async (inputMint, outputMint , amount) => {
@@ -36,7 +39,20 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
   const [loader , setLoader] = useState(true)
   const [trxDetail , setTrxDetail] = useState({})
   const [gasDetail , setGasDetail] = useState()
-
+  const {t} = useTranslation();
+  useEffect(() => {
+    const loadSelectedLanguage = async () => {
+      try {
+        const selectedLanguage = await AsyncStorage.getItem('selectedLanguage');
+        if (selectedLanguage) {
+          i18n.changeLanguage(selectedLanguage); 
+        }
+      } catch (error) {
+        console.error('Error loading selected language:', error);
+      }
+    };
+    loadSelectedLanguage();
+  }, []);
   const {
     wc,
     wallet,
@@ -55,7 +71,7 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
     // console.log("trx",trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,  trxDetail?.inAmount , selectedAccount.solana?.privateKey || selectedAccount.solana?.secretKey)
     try {
       setLoader(true)
-      let response = await Solana_swap(trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,  Number(trxDetail?.amountWei), selectedAccount.solana?.privateKey || selectedAccount.solana?.secretKey);
+      let response = await Solana_swap(trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,  trxDetail?.inAmount , selectedAccount.solana?.privateKey || selectedAccount.solana?.secretKey);
       console.log('Sending Sol...', response);
       if (response) {
         setLoader(false)
@@ -86,16 +102,10 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
   }
 
   const getEstimatedGas = async () => {
-
     try{
       setLoader(true)
-      console.log(trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,Number(trxDetail?.amountWei))
-     let getSwapDetails = await fetchQuote(trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,Number(trxDetail?.amountWei))
-     
-     
-      console.log(">>>>Swap Details" , getSwapDetails)
-     
-     let gasData = await SolToken_estimatedGas(data?.privateKey, data?.address,  trxDetail?.inToken?.address || trxDetail?.inToken?.token_address , data?.amountWei)
+      console.log(trxDetail?.inToken?.address || trxDetail?.inToken?.token_address, trxDetail?.outToken?.address || trxDetail?.outToken?.token_address,trxDetail?.inAmount)
+      let gasData = await SolToken_estimatedGas(data?.privateKey, data?.address,  trxDetail?.inToken?.address || trxDetail?.inToken?.token_address , data?.amountWei)
       console.log("gas data >>>>>>>>>>>>>",gasData)
       setGasDetail(gasData)
       setLoader(false)
@@ -106,11 +116,7 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
 
   useEffect(() => {
     if (route?.params?.trxData) {
-      // console.log(.privateKey)
-      console.log(Number(route?.params?.trxData?.decimals))
-      console.log( Math.pow(10, Number(route?.params?.trxData?.decimals)))
-      console.log( route?.params?.trxData?.inAmount)
-      console.log(">>>>>>", Number(route?.params?.trxData?.inAmount) * Math.pow(10, Number(route?.params?.trxData?.decimals)) )
+      console.log(route?.params?.trxData?.privateKey)
       getEstimatedGas(route?.params?.trxData)
       setTrxDetail(route?.params?.trxData);
     }
@@ -181,7 +187,8 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
     <ScrollView
       style={[styles.mainWrapper, {backgroundColor: theme.screenBackgroud}]}>
       <Header
-        title={'Confirm Transaction'}
+        title={t('confirm_transaction')}
+
         onBack={() => navigation.goBack()}
       />
       {/* <View style={styles.swapWrapper}>
@@ -190,7 +197,8 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
       <View style={[styles.confirmAmountWrapperFlex ,{marginTop:50}]}>
         <View style={styles.confrimAmountCenterWrapper}>
           <Text style={[styles.confirmAmountHeding, {color: theme.text}]}>
-          Review Your Transaction
+          {t('review_your_transaction')}
+
           </Text>
           <View style={styles.confirmAmountFlex}>
             <View>
@@ -226,7 +234,7 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
       <View
         style={[styles.gasFeeMainWrapper, {backgroundColor: theme.menuItemBG}]}>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Platform Fee</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}> {t('platform_fee')}</Text>
           <View>
             <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
            0
@@ -237,7 +245,7 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
           </View>
         </View>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Slippage</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>{t('slippage')}</Text>
           <View>
             {/* <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
               0.00612061025
@@ -248,21 +256,10 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
           </View>
         </View>
         <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Estimated Gas</Text>
-          <View>
-            {/* <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
-              0.00612061025
-            </Text> */}
-            <Text style={[styles.gasFeeMaxVal, {color: theme.text}]}>
-            0.000005 SOL
-            </Text>
-          </View>
-        </View>
-        <View style={styles.gasFeeFlex}>
-          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>Received Amount</Text>
+          <Text style={[styles.gasFeeLabel, {color: theme.text}]}>{t('received_amount')}</Text>
           <View>
             <Text style={[styles.gasFeeValue, {color: theme.emphasis}]}>
-            {Number(trxDetail?.outAmount)} {trxDetail?.outToken?.symbol}
+            {Number(trxDetail?.outAmount)} {trxDetail?.symbol}
             </Text>
             {/* <Text style={[styles.gasFeeMaxVal, {color: theme.text}]}>
               0.00612061025
@@ -282,13 +279,14 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
             },
           ]}>
           <Text style={[styles.tokenImportButtonText, {color: '#fff'}]}>
-            Confirm Transaction
+          {t('confirm_transaction')}
+
           </Text>
         </TouchableOpacity>
         :
         <View style={{ justifyContent: 'center', alignItems: 'center'}}>
         <Text style={[styles.gasFeeValue, {color: theme.emphasis }]}>
-          Insufficient funds for gas
+        {t('insufficient_funds_for_gas')}
         </Text>
         <TouchableOpacity
           style={[
@@ -301,7 +299,10 @@ const ConfirmSolSwapTransaction = ({route, navigation}) => {
             },
           ]}>
           <Text style={[styles.tokenImportButtonText, {color: '#fff'}]}>
-            Confirm Transaction
+            {/* Confirm Transaction
+             */}
+          {t('confirm_transaction')}
+
           </Text>
         </TouchableOpacity>
         </View>
